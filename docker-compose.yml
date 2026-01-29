@@ -27,7 +27,7 @@ services:
     image: redpandadata/console:v2.4.5
     container_name: redpanda-console
     ports:
-      - "8080:8080"
+      - "8083:8083"
     environment:
       - KAFKA_BROKERS=redpanda:9092
     depends_on:
