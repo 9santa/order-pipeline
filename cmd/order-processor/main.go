@@ -11,6 +11,7 @@ import (
 	"order_pipeline/internal/app/orderprocessor"
 	"order_pipeline/internal/infra/httpserver"
 	"order_pipeline/internal/infra/kafka"
+	"order_pipeline/internal/infra/redisx"
 	"order_pipeline/internal/observability"
 
 	"go.uber.org/zap"
@@ -27,6 +28,14 @@ func main() {
 		panic(err)
 	}
 	defer func() { _ = logger.Sync() }()
+
+	// Redis init
+	rx := redisx.NewRedisClient(redisx.RedisConfig{Addr: cfg.RedisAddr})
+	defer func() { _ = rx.Close() }()
+
+	if err := rx.Ping(context.Background()); err != nil {
+		logger.Fatal("redis not reachable", zap.Error(err))
+	}
 
 	health := &httpserver.Health{}
 	health.SetReady(false)
@@ -48,7 +57,8 @@ func main() {
 	}, logger)
 	defer func() { _ = cons.Close() }()
 
-	handler := orderprocessor.NewHandler(logger)
+	idem := orderprocessor.NewIdempotencyStore(rx.Raw(), "order-pipeline:processed", 7*24*time.Hour)
+	handler := orderprocessor.NewHandler(logger, idem)
 
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()

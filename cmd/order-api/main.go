@@ -26,8 +26,7 @@ func main() {
 	defer func() { _ = logger.Sync() }()
 
 	prod, _ := kafka.NewProducer(&kafka.ProducerConfig{
-		Brokers: cfg.KafkaBrokers,
-		Topic:   cfg.OrdersCreatedTopic,
+		Topic: cfg.OrdersCreatedTopic,
 	}, logger)
 	defer func() { _ = prod.Close() }()
 
