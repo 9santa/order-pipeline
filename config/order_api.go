@@ -2,7 +2,7 @@ package config
 
 type OrderAPIConfig struct {
 	HTTPAddr           string
-	KafkaBrokers       []string
+	PostgresDSN        string
 	OrdersCreatedTopic string
 	Source             string
 }
@@ -10,7 +10,7 @@ type OrderAPIConfig struct {
 func LoadOrderAPI() OrderAPIConfig {
 	return OrderAPIConfig{
 		HTTPAddr:           EnvString("HTTP_ADDR", ":8080"),
-		KafkaBrokers:       EnvStringsCSV("KAFKA_BROKERS", "localhost:9092"),
+		PostgresDSN:        EnvString("PS_DSN", "postgres://postgres:postgres@localhost:5432/order_pipeline?sslmode=disable"),
 		OrdersCreatedTopic: EnvString("TOPIC_ORDERS_CREATED", "orders.created"),
 		Source:             EnvString("SERVICE_NAME", "order-api"),
 	}
